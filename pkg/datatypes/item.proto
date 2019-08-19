@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package farseer.datatypes;
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/ijsong/farseer/pkg/datatypes";
+
+message Item {
+    string id = 1;
+    map<string, string> properties = 2;
+    google.protobuf.Timestamp create_time = 3;
+    google.protobuf.Timestamp update_time = 4;
+}
+
+message GetItemRequest {
+    string item_id = 1;
+}
+
+service ItemService {
+    rpc GetItem (GetItemRequest) returns (Item) {
+    }
+
+    rpc ListItems (google.protobuf.Empty) returns (stream Item) {
+    }
+}

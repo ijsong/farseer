@@ -1,0 +1,86 @@
+syntax = "proto3";
+
+package farseer.datagather;
+
+import "google/protobuf/empty.proto";
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+
+import "github.com/ijsong/farseer/pkg/datatypes/event.proto";
+import "github.com/ijsong/farseer/pkg/datatypes/item.proto";
+import "github.com/ijsong/farseer/pkg/datatypes/user.proto";
+
+option go_package = "github.com/ijsong/farseer/internal/service";
+
+message CreateEventRequest {
+    string user_id = 1;
+    farseer.datatypes.Event event = 2;
+    bool async = 3;
+}
+
+message CreateItemRequest {
+    farseer.datatypes.Item item = 1;
+    bool async = 2;
+}
+
+message DeleteItemRequest {
+    string item_id = 1;
+    bool async = 2;
+}
+
+message UpdateItemRequest {
+    string item_id = 1;
+    farseer.datatypes.Item item = 2;
+    bool async = 3;
+}
+
+message CreateUserRequest {
+    farseer.datatypes.User user = 1;
+    bool async = 2;
+}
+
+message DeleteUserRequest {
+    string user_id = 1;
+    bool async = 2;
+}
+
+message UpdateUserRequest {
+    string user_id = 1;
+    farseer.datatypes.User user = 2;
+    bool async = 3;
+}
+
+message DatagatherRequest {
+    option (gogoproto.onlyone) = true;
+
+    CreateEventRequest create_event_request = 1;
+    CreateItemRequest create_item_request = 2;
+    DeleteItemRequest delete_item_request = 3;
+    UpdateItemRequest update_item_request = 4;
+    CreateUserRequest create_user_request = 5;
+    DeleteUserRequest delete_user_request = 6;
+    UpdateUserRequest update_user_request = 7;
+}
+
+service DatagatherService {
+    rpc CreateEvent (CreateEventRequest) returns (google.protobuf.Empty) {
+    }
+
+    rpc CreateItem (CreateItemRequest) returns (google.protobuf.Empty) {
+    }
+
+    rpc DeleteItem (DeleteItemRequest) returns (google.protobuf.Empty) {
+    }
+
+    rpc UpdateItem (UpdateItemRequest) returns (google.protobuf.Empty) {
+    }
+
+    rpc CreateUser (CreateUserRequest) returns (google.protobuf.Empty) {
+    }
+
+    rpc DeleteUser (DeleteUserRequest) returns (google.protobuf.Empty) {
+    }
+
+    rpc UpdateUser (UpdateUserRequest) returns (google.protobuf.Empty) {
+    }
+
+}
