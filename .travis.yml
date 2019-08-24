@@ -5,6 +5,7 @@ env:
   global:
     - GO111MODULE=on
 script:
+  - find --version
   - ls
   - pwd
   - make
