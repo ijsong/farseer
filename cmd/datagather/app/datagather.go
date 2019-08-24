@@ -2,10 +2,11 @@ package app
 
 import (
 	"context"
+	"fmt"
 
-	"go.uber.org/zap"
 	"github.com/ijsong/farseer/pkg/queue"
 	"github.com/ijsong/farseer/pkg/server"
+	"go.uber.org/zap"
 )
 
 type DataGather struct {
@@ -13,7 +14,7 @@ type DataGather struct {
 	svr       *server.Server
 	queue     *queue.EmbeddedQueue
 	producers []*queue.EmbeddedQueueProducer
-	consumers []*queue.EmbeddedQueueConsumer
+	consumer  *queue.EmbeddedQueueConsumer
 	logger    *zap.Logger
 }
 
@@ -31,7 +32,7 @@ func NewDataGather(conf *DataGatherConfig) (*DataGather, error) {
 	dg := &DataGather{
 		conf:      conf,
 		producers: make([]*queue.EmbeddedQueueProducer, 0),
-		consumers: make([]*queue.EmbeddedQueueConsumer, 0),
+		consumer:  nil,
 		logger:    zap.L(),
 	}
 
@@ -42,11 +43,17 @@ func NewDataGather(conf *DataGatherConfig) (*DataGather, error) {
 	}
 
 	for i := 0; i < conf.queueConfig.NumberOfProducers; i++ {
-		producer, err := queue.NewEmbeddedQueueProducer(conf.queueConfig.Address)
+		producer, err := queue.NewEmbeddedQueueProducer(conf.queueConfig.Address, datagatherTopic)
 		if err != nil {
 			return nil, err
 		}
 		dg.producers = append(dg.producers, producer)
+	}
+
+	channel := fmt.Sprintf("%s_channel", datagatherTopic)
+	dg.consumer, err = queue.NewEmbeddedQueueConsumer(datagatherTopic, channel)
+	if err != nil {
+		return nil, err
 	}
 
 	dg.svr, err = server.NewServer(conf.serverConfig)
@@ -60,25 +67,11 @@ func (dg *DataGather) Start() error {
 	datagatherService := NewDatagatherService(dg.producers)
 	services := []server.ServiceServer{datagatherService}
 	dg.queue.Start()
+	dg.consumer.AddHandler(datagatherMessageHandler, dg.conf.queueConfig.NumberOfConsumers)
+	dg.consumer.Connect(dg.conf.queueConfig.Address)
 	dg.logger.Info("starting server")
 	defer dg.stop()
 	return dg.svr.Start(context.Background(), services)
-}
-
-func (dg *DataGather) initService(initializer func(*queue.EmbeddedQueueProducer) (server.ServiceServer, error)) (server.ServiceServer, error) {
-	var err error
-	producer, err := queue.NewEmbeddedQueueProducer(dg.conf.queueConfig.Address)
-	//CreateEventTopic)
-	if err != nil {
-		return nil, err
-	}
-	dg.producers = append(dg.producers, producer)
-
-	service, err := initializer(producer)
-	if err != nil {
-		return nil, err
-	}
-	return service, nil
 }
 
 func (dg *DataGather) stop() {
@@ -87,10 +80,9 @@ func (dg *DataGather) stop() {
 		dg.logger.Info("stopping producer")
 		producer.Stop()
 	}
-	for _, consumer := range dg.consumers {
-		dg.logger.Info("stopping consumer")
-		consumer.Stop()
-	}
+	dg.logger.Info("stopping consumer")
+	dg.consumer.Stop()
+
 	dg.logger.Info("stopping embedded queue")
 	dg.queue.Stop()
 }
