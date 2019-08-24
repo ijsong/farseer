@@ -2,10 +2,17 @@
 github.com/blang/semver
 # github.com/bmizerany/perks v0.0.0-20141205001514-d9a9656a3a4b
 github.com/bmizerany/perks/quantile
+# github.com/gocql/gocql v0.0.0-20190810123941-df4b9cc33030
+github.com/gocql/gocql
+github.com/gocql/gocql/internal/lru
+github.com/gocql/gocql/internal/murmur
+github.com/gocql/gocql/internal/streams
 # github.com/gogo/protobuf v1.2.1
 github.com/gogo/protobuf/proto
 github.com/gogo/protobuf/types
+github.com/gogo/protobuf/gogoproto
 github.com/gogo/protobuf/sortkeys
+github.com/gogo/protobuf/protoc-gen-gogo/descriptor
 # github.com/golang/protobuf v1.3.2
 github.com/golang/protobuf/ptypes/timestamp
 github.com/golang/protobuf/proto
@@ -24,6 +31,8 @@ github.com/grpc-ecosystem/go-grpc-middleware/tags
 github.com/grpc-ecosystem/go-grpc-middleware/logging
 github.com/grpc-ecosystem/go-grpc-middleware/logging/zap/ctxzap
 github.com/grpc-ecosystem/go-grpc-middleware/tags/zap
+# github.com/hailocab/go-hostpool v0.0.0-20160125115350-e80d13ce29ed
+github.com/hailocab/go-hostpool
 # github.com/inconshreveable/mousetrap v1.0.0
 github.com/inconshreveable/mousetrap
 # github.com/julienschmidt/httprouter v1.2.0
@@ -47,6 +56,11 @@ github.com/nsqio/nsq/internal/util
 github.com/nsqio/nsq/internal/version
 github.com/nsqio/nsq/internal/writers
 github.com/nsqio/nsq/internal/stringy
+# github.com/scylladb/go-reflectx v1.0.1
+github.com/scylladb/go-reflectx
+# github.com/scylladb/gocqlx v1.3.1
+github.com/scylladb/gocqlx
+github.com/scylladb/gocqlx/qb
 # github.com/spf13/cobra v0.0.5
 github.com/spf13/cobra
 # github.com/spf13/pflag v1.0.3
@@ -113,3 +127,5 @@ google.golang.org/grpc/balancer/base
 google.golang.org/grpc/credentials/internal
 google.golang.org/grpc/binarylog/grpc_binarylog_v1
 google.golang.org/grpc/internal/syscall
+# gopkg.in/inf.v0 v0.9.1
+gopkg.in/inf.v0

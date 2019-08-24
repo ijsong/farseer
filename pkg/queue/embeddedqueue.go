@@ -1,6 +1,7 @@
 package queue
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/nsqio/go-nsq"
@@ -52,19 +53,26 @@ func (eq *EmbeddedQueue) Stop() {
 
 type EmbeddedQueueProducer struct {
 	producer *nsq.Producer
+	topic    string
 }
 
-func NewEmbeddedQueueProducer(queueAddress string) (*EmbeddedQueueProducer, error) {
+func NewEmbeddedQueueProducer(queueAddress, topic string) (*EmbeddedQueueProducer, error) {
+	if len(queueAddress) == 0 {
+		return nil, fmt.Errorf("invalid queue address")
+	}
+	if len(topic) == 0 {
+		return nil, fmt.Errorf("invalid topic")
+	}
 	conf := nsq.NewConfig()
 	producer, err := nsq.NewProducer(queueAddress, conf)
 	if err != nil {
 		return nil, err
 	}
-	return &EmbeddedQueueProducer{producer: producer}, nil
+	return &EmbeddedQueueProducer{producer: producer, topic: topic}, nil
 }
 
-func (eqp *EmbeddedQueueProducer) Publish(topic string, msg []byte) error {
-	return eqp.producer.Publish(topic, msg)
+func (eqp *EmbeddedQueueProducer) Publish(msg []byte) error {
+	return eqp.producer.Publish(eqp.topic, msg)
 }
 
 func (eqp *EmbeddedQueueProducer) Ping() error {
