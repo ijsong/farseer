@@ -4,4 +4,4 @@ go:
   - 1.12.x
 
 env:
-  - GO111MODULE=o
+  - GO111MODULE=on
