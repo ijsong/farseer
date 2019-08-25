@@ -1,4 +1,11 @@
 #!/usr/bin/env sh
-wget https://github.com/google/protobuf/archive/v$PROTOBUF_VERSION.tar.gz
-tar -xzvf v$PROTOBUF_VERSION.tar.gz
-cd protobuf-$PROTOBUF_VERSION && ./autogen.sh && ./configure && make && make check && sudo make install && sudo ldconfig
+git clone https://github.com/protocolbuffers/protobuf.git
+cd protobuf \
+        git checkout v$PROTOBUF_VERSION && \
+        git submodule update --init --recursive && \
+        ./autogen.sh && \
+        ./configure && \
+        make && \
+        make check && \
+        sudo make install && \
+        sudo ldconfig
