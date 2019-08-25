@@ -8,6 +8,9 @@ env:
     - GO111MODULE=on
     - PROTOBUF_VERSION=3.9.1
 
+services:
+  - cassandra
+
 before_install:
   - build/install-protobuf.sh
   - build/install-gogoprotobuf.sh
