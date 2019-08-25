@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+set -ex
 case $OSTYPE in
         darwin*)
                 arch="osx-$(uname -m)"
