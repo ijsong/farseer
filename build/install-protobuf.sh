@@ -14,5 +14,5 @@ case $OSTYPE in
 esac
 
 wget -q https://github.com/protocolbuffers/protobuf/releases/download/v$PROTOBUF_VERSION/protoc-$PROTOBUF_VERSION-$arch.zip
-unzip -d /usr protoc-$PROTOBUF_VERSION-$arch.zip
+sudo unzip -d /usr protoc-$PROTOBUF_VERSION-$arch.zip
 rm -f protoc-$PROTOBUF_VERSION-$arch.zip
