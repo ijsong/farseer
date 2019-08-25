@@ -1,11 +1,13 @@
 language: go
+
 go:
   - 1.12.x
+
 env:
   global:
     - GO111MODULE=on
-script:
-  - find --version
-  - ls
-  - pwd
-  - make
+    - PROTOBUF_VERSION=3.9.1
+
+before_install:
+  - build/install-protobuf.sh
+  - build/install-gogoprotobuf.sh

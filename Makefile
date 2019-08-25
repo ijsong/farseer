@@ -10,7 +10,7 @@ PROTO_INCS = -I $$GOPATH/src -I vendor -I .
 #-I $$GOPATH/src -I vendor
 
 GO_PROTO_TARGETS := $(PROTO_SRCS:.proto=.pb.go)
-GO_PROTO_OPTIONS = --gogo_out=plugins=grpc,Mgoogle/protobuf/empty.proto=github.com/gogo/protobuf/types,paths=source_relative:.
+GO_PROTO_OPTIONS = --gogo_out=plugins=grpc,Mgoogle/protobuf/empty.proto=github.com/gogo/protobuf/types,Mgoogle/protobuf/any.proto=github.com/gogo/protobuf/types,Mgoogle/protobuf/duration.proto=github.com/gogo/protobuf/types,paths=source_relative:.
 
 DATAGATHER_SRCS := $(shell find cmd/datagather -name '*.go')
 DATAGATHER_MAIN := cmd/datagather/main.go
