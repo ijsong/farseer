@@ -1,11 +1,17 @@
-#!/usr/bin/env sh
-git clone https://github.com/protocolbuffers/protobuf.git
-cd protobuf \
-        git checkout v$PROTOBUF_VERSION && \
-        git submodule update --init --recursive && \
-        ./autogen.sh && \
-        ./configure && \
-        make && \
-        make check && \
-        sudo make install && \
-        sudo ldconfig
+#!/usr/bin/env bash
+
+case $OSTYPE in
+        darwin*)
+                arch="osx-$(uname -m)"
+                ;;
+        linux*)
+                arch="linux-$(uname -m)"
+                ;;
+        msys*)
+                arch="win64"
+                ;;
+esac
+
+wget -q https://github.com/protocolbuffers/protobuf/releases/download/v$PROTOBUF_VERSION/protoc-$PROTOBUF_VERSION-$arch.zip
+unzip -d /usr protoc-$PROTOBUF_VERSION-$arch.zip
+rm -f protoc-$PROTOBUF_VERSION-$arch.zip
