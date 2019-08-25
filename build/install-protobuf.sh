@@ -1,4 +1,4 @@
 #!/usr/bin/env sh
-wget https://protobuf.googlecode.com/files/protobuf-$PROTOBUF_VERSION.tar.gz
-tar -xzvf protobuf-$PROTOBUF_VERSION.tar.gz
+wget https://github.com/google/protobuf/archive/v$PROTOBUF_VERSION.tar.gz
+tar -xzvf v$PROTOBUF_VERSION.tar.gz
 cd protobuf-$PROTOBUF_VERSION && ./configure --prefix=/usr && make && sudo make install
