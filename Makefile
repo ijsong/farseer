@@ -25,7 +25,7 @@ $(DATAGATHER_TARGET): $(DATAGATHER_SRCS) $(SRCS)
 proto: $(GO_PROTO_TARGETS)
 
 $(GO_PROTO_TARGETS): $(PROTO_SRCS)
-        for proto_src in $(PROTO_SRCS) ; do \
+	for proto_src in $(PROTO_SRCS) ; do \
 		$(PROTOC) $(PROTO_INCS) $(GO_PROTO_OPTIONS) $$proto_src ; \
 	done
 
