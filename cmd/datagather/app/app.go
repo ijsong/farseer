@@ -3,15 +3,16 @@ package app
 import (
 	"time"
 
-	"github.com/spf13/cobra"
 	"github.com/ijsong/farseer/pkg/queue"
 	"github.com/ijsong/farseer/pkg/server"
+	"github.com/spf13/cobra"
 )
 
 func NewDataGatherCommand() *cobra.Command {
 	conf := &DataGatherConfig{
-		serverConfig: &server.ServerConfig{},
-		queueConfig:  &queue.EmbeddedQueueConfig{},
+		serverConfig:   &server.ServerConfig{},
+		queueConfig:    &queue.EmbeddedQueueConfig{},
+		cassandraHosts: "",
 	}
 
 	var cmd = &cobra.Command{
@@ -34,7 +35,7 @@ func NewDataGatherCommand() *cobra.Command {
 	startCmd.Flags().DurationVar(&conf.queueConfig.SyncTimeout, "queue_sync_timeout", 2*time.Second, "queue persistent interval (fsync)")
 	startCmd.Flags().IntVar(&conf.queueConfig.NumberOfProducers, "queue_num_producers", 1, "the number of producers")
 	startCmd.Flags().IntVar(&conf.queueConfig.NumberOfConsumers, "queue_num_consumers", 1, "the number of consumers")
-	cmd.AddCommand(startCmd)
+	startCmd.Flags().StringVar(&conf.cassandraHosts, "cassandra_hosts", "localhost", "cassandra hosts")
 	cmd.AddCommand(startCmd)
 	return cmd
 }

@@ -3,9 +3,11 @@ package app
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/ijsong/farseer/pkg/queue"
 	"github.com/ijsong/farseer/pkg/server"
+	"github.com/ijsong/farseer/pkg/storage"
 	"go.uber.org/zap"
 )
 
@@ -15,12 +17,14 @@ type DataGather struct {
 	queue     *queue.EmbeddedQueue
 	producers []*queue.EmbeddedQueueProducer
 	consumer  *queue.EmbeddedQueueConsumer
+	storage   storage.Storage
 	logger    *zap.Logger
 }
 
 type DataGatherConfig struct {
-	serverConfig *server.ServerConfig
-	queueConfig  *queue.EmbeddedQueueConfig
+	serverConfig   *server.ServerConfig
+	queueConfig    *queue.EmbeddedQueueConfig
+	cassandraHosts string
 }
 
 type DataGatherService interface {
@@ -60,6 +64,8 @@ func NewDataGather(conf *DataGatherConfig) (*DataGather, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	dg.storage = storage.NewCassandraStorage(strings.Split(conf.cassandraHosts, ","))
 	return dg, nil
 }
 
@@ -69,6 +75,7 @@ func (dg *DataGather) Start() error {
 	dg.queue.Start()
 	dg.consumer.AddHandler(datagatherMessageHandler, dg.conf.queueConfig.NumberOfConsumers)
 	dg.consumer.Connect(dg.conf.queueConfig.Address)
+	dg.storage.Connect()
 	dg.logger.Info("starting server")
 	defer dg.stop()
 	return dg.svr.Start(context.Background(), services)
