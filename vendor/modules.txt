@@ -2,6 +2,8 @@
 github.com/blang/semver
 # github.com/bmizerany/perks v0.0.0-20141205001514-d9a9656a3a4b
 github.com/bmizerany/perks/quantile
+# github.com/confluentinc/confluent-kafka-go v1.3.0
+github.com/confluentinc/confluent-kafka-go/kafka
 # github.com/gocql/gocql v0.0.0-20190810123941-df4b9cc33030
 github.com/gocql/gocql
 github.com/gocql/gocql/internal/lru
@@ -9,6 +11,7 @@ github.com/gocql/gocql/internal/murmur
 github.com/gocql/gocql/internal/streams
 # github.com/gogo/protobuf v1.3.1
 github.com/gogo/protobuf/gogoproto
+github.com/gogo/protobuf/jsonpb
 github.com/gogo/protobuf/proto
 github.com/gogo/protobuf/protoc-gen-gogo/descriptor
 github.com/gogo/protobuf/sortkeys

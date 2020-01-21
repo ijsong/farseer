@@ -1,6 +1,7 @@
 package app
 
 import (
+	"github.com/ijsong/farseer/pkg/kafka"
 	"time"
 
 	"github.com/ijsong/farseer/pkg/queue"
@@ -12,6 +13,7 @@ func NewDataGatherCommand() *cobra.Command {
 	conf := &DataGatherConfig{
 		serverConfig:   &server.ServerConfig{},
 		queueConfig:    &queue.EmbeddedQueueConfig{},
+		kafkaConfig:    &kafka.KafkaConfig{},
 		cassandraHosts: "",
 	}
 
@@ -36,6 +38,8 @@ func NewDataGatherCommand() *cobra.Command {
 	startCmd.Flags().IntVar(&conf.queueConfig.NumberOfProducers, "queue_num_producers", 1, "the number of producers")
 	startCmd.Flags().IntVar(&conf.queueConfig.NumberOfConsumers, "queue_num_consumers", 1, "the number of consumers")
 	startCmd.Flags().StringVar(&conf.cassandraHosts, "cassandra_hosts", "localhost", "cassandra hosts")
+	startCmd.Flags().IntVar(&conf.kafkaConfig.FlushTimeoutMs, "kafka_flush_timeout", 1000, "flush timeout in milliseconds when closing kafka producer")
+	startCmd.Flags().StringVar(&conf.kafkaConfig.BootstrapServers, "kafka_bootstrap_servers", "localhost", "kafka bootstrap servers")
 	cmd.AddCommand(startCmd)
 	return cmd
 }

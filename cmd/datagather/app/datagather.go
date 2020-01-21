@@ -1,8 +1,13 @@
 package app
 
 import (
+	"bytes"
 	"context"
 	"fmt"
+	"github.com/gogo/protobuf/jsonpb"
+	"github.com/gogo/protobuf/proto"
+	"github.com/ijsong/farseer/internal/service"
+	"github.com/ijsong/farseer/pkg/kafka"
 	"strings"
 
 	"github.com/ijsong/farseer/pkg/queue"
@@ -12,18 +17,20 @@ import (
 )
 
 type DataGather struct {
-	conf      *DataGatherConfig
-	svr       *server.Server
-	queue     *queue.EmbeddedQueue
-	producers []*queue.EmbeddedQueueProducer
-	consumer  *queue.EmbeddedQueueConsumer
-	storage   storage.Storage
-	logger    *zap.Logger
+	conf          *DataGatherConfig
+	svr           *server.Server
+	queue         *queue.EmbeddedQueue
+	producers     []*queue.EmbeddedQueueProducer
+	consumer      *queue.EmbeddedQueueConsumer
+	kafkaProducer *kafka.KafkaProducer
+	storage       storage.Storage
+	logger        *zap.Logger
 }
 
 type DataGatherConfig struct {
 	serverConfig   *server.ServerConfig
 	queueConfig    *queue.EmbeddedQueueConfig
+	kafkaConfig    *kafka.KafkaConfig
 	cassandraHosts string
 }
 
@@ -35,7 +42,7 @@ type DataGatherService interface {
 func NewDataGather(conf *DataGatherConfig) (*DataGather, error) {
 	dg := &DataGather{
 		conf:      conf,
-		producers: make([]*queue.EmbeddedQueueProducer, 0),
+		producers: nil,
 		consumer:  nil,
 		logger:    zap.L(),
 	}
@@ -66,6 +73,11 @@ func NewDataGather(conf *DataGatherConfig) (*DataGather, error) {
 	}
 
 	dg.storage = storage.NewCassandraStorage(strings.Split(conf.cassandraHosts, ","))
+
+	dg.kafkaProducer, err = kafka.NewKafkaProducer(conf.kafkaConfig)
+	if err != nil {
+		return nil, err
+	}
 	return dg, nil
 }
 
@@ -73,7 +85,23 @@ func (dg *DataGather) Start() error {
 	datagatherService := NewDatagatherService(dg.producers)
 	services := []server.ServiceServer{datagatherService}
 	dg.queue.Start()
-	dg.consumer.AddHandler(datagatherMessageHandler, dg.conf.queueConfig.NumberOfConsumers)
+	dg.consumer.AddHandler(func(msg []byte) error {
+		req := &service.DatagatherRequest{}
+		if err := proto.Unmarshal(msg, req); err != nil {
+			return err
+		}
+
+		marshaler := &jsonpb.Marshaler{}
+		var buf bytes.Buffer
+		if err := marshaler.Marshal(&buf, req); err != nil {
+			return err
+		}
+		bytes := buf.Bytes()
+
+		zap.L().Info("message handler", zap.Any("req", buf.String()))
+		dg.kafkaProducer.Produce("datagather", bytes)
+		return nil
+	}, dg.conf.queueConfig.NumberOfConsumers)
 	dg.consumer.Connect(dg.conf.queueConfig.Address)
 	dg.storage.Connect()
 	dg.logger.Info("starting server")
@@ -92,4 +120,7 @@ func (dg *DataGather) stop() {
 
 	dg.logger.Info("stopping embedded queue")
 	dg.queue.Stop()
+
+	dg.logger.Info("stopping kafka producer")
+	dg.kafkaProducer.Close()
 }
