@@ -99,8 +99,7 @@ func (dg *DataGather) Start() error {
 		bytes := buf.Bytes()
 
 		zap.L().Info("message handler", zap.Any("req", buf.String()))
-		dg.kafkaProducer.Produce("datagather", bytes)
-		return nil
+		return dg.kafkaProducer.Produce("datagather", bytes)
 	}, dg.conf.queueConfig.NumberOfConsumers)
 	dg.consumer.Connect(dg.conf.queueConfig.Address)
 	dg.storage.Connect()

@@ -1,7 +1,6 @@
 package kafka
 
 import (
-	"fmt"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"go.uber.org/zap"
 )
@@ -15,8 +14,9 @@ type KafkaConfig struct {
 }
 
 type KafkaProducer struct {
-	p *kafka.Producer
-	c *KafkaConfig
+	p          *kafka.Producer
+	c          *KafkaConfig
+	reportTerm chan bool
 }
 
 func NewKafkaProducer(config *KafkaConfig) (*KafkaProducer, error) {
@@ -27,32 +27,12 @@ func NewKafkaProducer(config *KafkaConfig) (*KafkaProducer, error) {
 	if err != nil {
 		return nil, err
 	}
-	doneChan := make(chan bool)
-
-	go func() {
-		defer close(doneChan)
-		for e := range p.Events() {
-			switch ev := e.(type) {
-			case *kafka.Message:
-				m := ev
-				if m.TopicPartition.Error != nil {
-					fmt.Printf("Delivery failed: %v\n", m.TopicPartition.Error)
-				} else {
-					fmt.Printf("Delivered message to topic %s [%d] at offset %v\n",
-						*m.TopicPartition.Topic, m.TopicPartition.Partition, m.TopicPartition.Offset)
-				}
-				return
-
-			default:
-				fmt.Printf("Ignored event: %s\n", ev)
-			}
-		}
-	}()
-	
-	return &KafkaProducer{p: p, c: config}, nil
+	prd := &KafkaProducer{p: p, c: config, reportTerm: make(chan bool)}
+	go prd.processEvents()
+	return prd, nil
 }
 
-func (prd *KafkaProducer) Produce(topic string, msg []byte) {
+func (prd *KafkaProducer) Produce(topic string, msg []byte) error {
 	m := &kafka.Message{
 		TopicPartition: kafka.TopicPartition{
 			Topic:     &topic,
@@ -60,19 +40,33 @@ func (prd *KafkaProducer) Produce(topic string, msg []byte) {
 		},
 		Value: msg,
 	}
-	prd.p.ProduceChannel() <- m
+	return prd.p.Produce(m, nil)
+	//prd.p.ProduceChannel() <- m
 }
 
 func (prd *KafkaProducer) Close() {
 	remains := prd.p.Flush(prd.c.FlushTimeoutMs)
 	zap.L().Info("unflushed messages in Kafka producer", zap.Any("num", remains))
 	prd.p.Close()
+	prd.reportTerm <- true
 }
 
-//func (kqp *KafkaQueueProducer) ProduceMessage(topic string, msg []byte) {
-//	p := (*kafka.Producer)(kqp)
-//	p.Produce(&kafka.Message{
-//		TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},
-//		Value:          msg,
-//	}, nil)
-//}
+func (prd *KafkaProducer) processEvents() {
+	for {
+		select {
+		case e := <-prd.p.Events():
+			switch evt := e.(type) {
+			case *kafka.Message:
+				if evt.TopicPartition.Error == nil {
+					continue
+				}
+				// handle evt => dead letter or re-enqueue
+			default:
+				// unknown event type
+			}
+		case <-prd.reportTerm:
+			return
+		default:
+		}
+	}
+}
