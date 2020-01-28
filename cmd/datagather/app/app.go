@@ -1,8 +1,9 @@
 package app
 
 import (
-	"github.com/ijsong/farseer/pkg/kafka"
 	"time"
+
+	"github.com/ijsong/farseer/pkg/kafka"
 
 	"github.com/ijsong/farseer/pkg/queue"
 	"github.com/ijsong/farseer/pkg/server"
