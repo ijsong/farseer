@@ -9,7 +9,6 @@ import (
 	"github.com/gogo/protobuf/types"
 	"github.com/ijsong/farseer/internal/service"
 	"github.com/ijsong/farseer/pkg/queue"
-	"go.uber.org/zap"
 	"google.golang.org/grpc"
 )
 
@@ -95,14 +94,5 @@ func (ds *DatagatherService) publishDatagatherRequest(req interface{}) error {
 	if err := producer.Publish(bytes); err != nil {
 		return err
 	}
-	return nil
-}
-
-func datagatherMessageHandler(msg []byte) error {
-	req := &service.DatagatherRequest{}
-	if err := proto.Unmarshal(msg, req); err != nil {
-		return err
-	}
-	zap.L().Info("message handler", zap.Any("req", req))
 	return nil
 }

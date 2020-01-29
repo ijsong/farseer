@@ -62,9 +62,11 @@ message DatagatherRequest {
 }
 
 service DatagatherService {
+    // Event
     rpc CreateEvent (CreateEventRequest) returns (google.protobuf.Empty) {
     }
 
+    // Item
     rpc CreateItem (CreateItemRequest) returns (google.protobuf.Empty) {
     }
 
@@ -74,6 +76,7 @@ service DatagatherService {
     rpc UpdateItem (UpdateItemRequest) returns (google.protobuf.Empty) {
     }
 
+    // User
     rpc CreateUser (CreateUserRequest) returns (google.protobuf.Empty) {
     }
 

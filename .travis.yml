@@ -14,3 +14,4 @@ services:
 before_install:
   - build/install-protobuf.sh
   - build/install-gogoprotobuf.sh
+  - build/install-librdkafka.sh
