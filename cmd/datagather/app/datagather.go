@@ -28,10 +28,9 @@ type DataGather struct {
 }
 
 type DataGatherConfig struct {
-	serverConfig   *server.ServerConfig
-	queueConfig    *queue.EmbeddedQueueConfig
-	kafkaConfig    *kafka.KafkaConfig
-	cassandraHosts string
+	serverConfig *server.ServerConfig
+	queueConfig  *queue.EmbeddedQueueConfig
+	kafkaConfig  *kafka.KafkaConfig
 }
 
 type DataGatherService interface {
