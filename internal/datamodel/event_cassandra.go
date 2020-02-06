@@ -13,7 +13,10 @@ type EventDataModelCassandra struct {
 
 func (e *EventDataModelCassandra) CreateEvent(event *datatypes.Event) error {
 	stmt, names := qb.Insert("farseer.events").Columns("user_id", "item_id", "event_type", "event_value", "timestamp", "properties").ToCql()
-	gocqlx.Query(e.session.Query(stmt), names).BindStruct(event)
+	q := gocqlx.Query(e.session.Query(stmt), names).BindStruct(event)
+	if err := q.ExecRelease(); err != nil {
+		return err
+	}
 	return nil
 }
 

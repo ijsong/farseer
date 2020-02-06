@@ -3,6 +3,7 @@ package storage
 import "github.com/gocql/gocql"
 
 type CassandraStorage struct {
+	conf    *CassandraStorageConfig
 	cluster *gocql.ClusterConfig
 }
 
@@ -10,8 +11,8 @@ type CassandraSession struct {
 	session *gocql.Session
 }
 
-func NewCassandraStorage(hosts []string) Storage {
-	cluster := gocql.NewCluster(hosts...)
+func NewCassandraStorage(conf *CassandraStorageConfig) Storage {
+	cluster := gocql.NewCluster(conf.Hosts...)
 	return &CassandraStorage{cluster: cluster}
 }
 
