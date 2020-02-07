@@ -11,9 +11,9 @@ type CassandraSession struct {
 	session *gocql.Session
 }
 
-func NewCassandraStorage(conf *CassandraStorageConfig) Storage {
+func NewCassandraStorage(conf *CassandraStorageConfig) (*CassandraStorage, error) {
 	cluster := gocql.NewCluster(conf.Hosts...)
-	return &CassandraStorage{cluster: cluster}
+	return &CassandraStorage{cluster: cluster}, nil
 }
 
 func (c *CassandraStorage) Connect() (StorageSession, error) {
@@ -22,6 +22,10 @@ func (c *CassandraStorage) Connect() (StorageSession, error) {
 		return nil, err
 	}
 	return &CassandraSession{session: session}, nil
+}
+
+func (s *CassandraSession) GetUnderlying() *gocql.Session {
+	return s.session
 }
 
 func (s *CassandraSession) Close() {

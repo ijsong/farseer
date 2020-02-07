@@ -1,13 +1,17 @@
 package app
 
 import (
+	"github.com/ijsong/farseer/internal/datamodel"
 	"github.com/ijsong/farseer/pkg/kafka"
+	"github.com/ijsong/farseer/pkg/storage"
 	"go.uber.org/zap"
 )
 
 type DataWriter struct {
 	conf            *DataWriterConfig
 	kafkaSubscriber *kafka.KafkaSubscriber
+	cassandra       *storage.CassandraStorage
+	eventDataModel  datamodel.EventDataModel
 }
 
 func NewDataWriter(conf *DataWriterConfig) (*DataWriter, error) {
@@ -15,9 +19,14 @@ func NewDataWriter(conf *DataWriterConfig) (*DataWriter, error) {
 	if err != nil {
 		return nil, err
 	}
+	cs, err := storage.NewCassandraStorage(conf.cassandraConfig)
+	if err != nil {
+		return nil, err
+	}
 	dw := &DataWriter{
 		conf:            conf,
 		kafkaSubscriber: ks,
+		cassandra:       cs,
 	}
 	return dw, nil
 }

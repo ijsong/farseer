@@ -3,12 +3,19 @@ package datamodel
 import (
 	"github.com/gocql/gocql"
 	"github.com/ijsong/farseer/pkg/datatypes"
+	"github.com/ijsong/farseer/pkg/storage"
 	"github.com/scylladb/gocqlx"
 	"github.com/scylladb/gocqlx/qb"
 )
 
 type EventDataModelCassandra struct {
 	session *gocql.Session
+}
+
+func NewEventDataModelCassandra(s *storage.CassandraSession) (*EventDataModelCassandra, error) {
+	return &EventDataModelCassandra{
+		session: s.GetUnderlying(),
+	}, nil
 }
 
 func (e *EventDataModelCassandra) CreateEvent(event *datatypes.Event) error {

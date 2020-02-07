@@ -1,7 +1,7 @@
-CREATE KEYSPACE IF NOT EXISTS compass
+CREATE KEYSPACE IF NOT EXISTS farseer
     WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1};
 
-USE compass;
+USE farseer;
 
 CREATE TABLE IF NOT EXISTS users (
     id text,
