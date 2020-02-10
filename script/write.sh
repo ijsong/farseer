@@ -5,7 +5,7 @@ grpcurl -plaintext \
         -import-path $GOPATH/src \
         -import-path ./vendor \
         -proto datagather_service.proto \
-        -d '{"user_id": "u1"}' \
+        -d '{"user_id": "u1", "event": {"user_id": "u1", "item_id": "i1"}}' \
         localhost:9091 \
         farseer.datagather.DatagatherService/CreateEvent
 

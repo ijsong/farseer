@@ -1,6 +1,8 @@
 package kafka
 
 import (
+	"time"
+
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 )
 
@@ -20,8 +22,9 @@ func NewKafkaSubscriber(conf *KafkaConfig) (*KafkaSubscriber, error) {
 		return nil, err
 	}
 	sub := &KafkaSubscriber{
-		csm:  csm,
-		conf: conf,
+		csm:      csm,
+		conf:     conf,
+		termchan: make(chan interface{}),
 	}
 	return sub, nil
 }
@@ -38,14 +41,15 @@ func (s *KafkaSubscriber) Subscribe(topic string, onSuccess func([]byte) error, 
 				return
 			default:
 				// FIXME: set timeout parameter
-				msg, err := s.csm.ReadMessage(-1)
+				msg, err := s.csm.ReadMessage(time.Second * 1)
 				if err != nil {
 					switch err.(kafka.Error).Code() {
 					case kafka.ErrTimedOut:
-						continue
 					default:
 						onFailure(err)
+						// FIXME: handle error case properly
 					}
+					continue
 
 				}
 				onSuccess(msg.Value)

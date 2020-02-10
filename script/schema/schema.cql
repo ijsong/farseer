@@ -17,10 +17,11 @@ CREATE TABLE IF NOT EXISTS items (
 
 CREATE TABLE IF NOT EXISTS events (
     user_id text,
+    item_id text,
+    event_type text,
+    event_value int,
     timestamp timeuuid,
     -- session text,
-    event text,
-    item_id text,
     properties map<text, text>,
-    PRIMARY KEY (user_id, timestamp, event, item_id)
+    PRIMARY KEY (user_id, timestamp, event_type, item_id)
 ) WITH CLUSTERING ORDER BY (timestamp DESC);

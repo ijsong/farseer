@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"math/rand"
+	"time"
 
 	"github.com/gogo/protobuf/proto"
 	"github.com/gogo/protobuf/types"
@@ -33,6 +34,12 @@ func (ds *DatagatherService) RegisterService(grpcServer *grpc.Server) {
 }
 
 func (ds *DatagatherService) CreateEvent(ctx context.Context, req *service.CreateEventRequest) (*types.Empty, error) {
+	if req.Event == nil {
+		return nil, fmt.Errorf("nil event")
+	}
+	if req.Event.Timestamp.IsZero() {
+		req.Event.Timestamp = time.Now()
+	}
 	if err := ds.publishDatagatherRequest(req); err != nil {
 		return nil, err
 	}

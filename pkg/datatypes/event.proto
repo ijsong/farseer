@@ -3,15 +3,18 @@ syntax = "proto3";
 package farseer.datatypes;
 
 import "google/protobuf/timestamp.proto";
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
 
 option go_package = "github.com/ijsong/farseer/pkg/datatypes";
 
+
 message Event {
+
     string user_id = 1;
     string item_id = 2;
     string event_type = 3;
     int64 event_value = 4;
-    google.protobuf.Timestamp timestamp = 5;
+    google.protobuf.Timestamp timestamp = 5 [(gogoproto.stdtime) = true, (gogoproto.nullable) = false];
     map<string, string> properties = 6;
 }
 
