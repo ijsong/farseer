@@ -7,10 +7,9 @@ import (
 )
 
 func NewDataWriterCommand() *cobra.Command {
-	cassandraConfig := &cassandra.CassandraStorageConfig{}
 	conf := &DataWriterConfig{
-		kafkaConfig:   &kafka.KafkaConfig{},
-		storageConfig: cassandraConfig,
+		kafkaConfig:     &kafka.KafkaConfig{},
+		cassandraConfig: &cassandra.CassandraStorageConfig{},
 	}
 	var cmd = &cobra.Command{
 		Use:  "datawriter",
@@ -26,7 +25,7 @@ func NewDataWriterCommand() *cobra.Command {
 	startCmd.Flags().IntVar(&conf.kafkaConfig.FlushTimeoutMs, "kafka_flush_timeout", 1000, "flush timeout in milliseconds when closing kafka producer")
 	startCmd.Flags().StringVar(&conf.kafkaConfig.BootstrapServers, "kafka_bootstrap_servers", "localhost", "kafka bootstrap servers")
 	startCmd.Flags().StringVar(&conf.kafkaConfig.GroupID, "kafka_group_id", "datawriter", "kafka bootstrap servers")
-	startCmd.Flags().StringSliceVar(&cassandraConfig.Hosts, "cassandra_hosts", []string{"localhost"}, "cassandra hosts")
+	startCmd.Flags().StringSliceVar(&conf.cassandraConfig.Hosts, "cassandra_hosts", []string{"localhost"}, "cassandra hosts")
 	cmd.AddCommand(startCmd)
 
 	return cmd

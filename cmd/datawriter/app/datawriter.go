@@ -12,22 +12,22 @@ import (
 	"github.com/ijsong/farseer/pkg/cassandra"
 	"github.com/ijsong/farseer/pkg/datamodel"
 	"github.com/ijsong/farseer/pkg/kafka"
-	"github.com/ijsong/farseer/pkg/storage"
 	"go.uber.org/zap"
 )
 
 type DataWriterConfig struct {
-	kafkaConfig   *kafka.KafkaConfig
-	storageConfig *cassandra.CassandraStorageConfig
+	kafkaConfig     *kafka.KafkaConfig
+	cassandraConfig *cassandra.CassandraStorageConfig
 }
 
 type DataWriter struct {
 	conf            *DataWriterConfig
 	kafkaSubscriber *kafka.KafkaSubscriber
-	//cassandra       *storage.CassandraStorage
-	storage        storage.Storage
-	eventDataModel datamodel.EventDataModel
-	q              chan interface{}
+	cassandra       *cassandra.CassandraStorage
+	userDataModel   datamodel.UserDataModel
+	itemDataModel   datamodel.ItemDataModel
+	eventDataModel  datamodel.EventDataModel
+	q               chan interface{}
 }
 
 func NewDataWriter(conf *DataWriterConfig) (*DataWriter, error) {
@@ -35,26 +35,22 @@ func NewDataWriter(conf *DataWriterConfig) (*DataWriter, error) {
 	if err != nil {
 		return nil, err
 	}
-	cs, err := cassandra.NewCassandraStorage(conf.storageConfig)
+	cassandra, err := cassandra.NewCassandraStorage(conf.cassandraConfig)
 	if err != nil {
 		return nil, err
 	}
 	dw := &DataWriter{
 		conf:            conf,
 		kafkaSubscriber: ks,
-		storage:         cs,
+		cassandra:       cassandra,
 		q:               make(chan interface{}),
 	}
 	return dw, nil
 }
 
 func (dw *DataWriter) Start() error {
-	ss, err := dw.storage.Connect()
-	if err != nil {
-		zap.L().Error("could not connect storage", zap.Error(err))
-		return err
-	}
-	dw.eventDataModel, err = cassandra.NewEventDataModelCassandra(ss)
+	var err error
+	dw.eventDataModel, err = cassandra.NewCassandraEventDataModel(dw.cassandra)
 	if err != nil {
 		zap.L().Error("could not instantiate data model", zap.Error(err))
 		return err

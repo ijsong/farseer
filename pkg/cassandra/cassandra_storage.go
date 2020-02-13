@@ -11,23 +11,23 @@ type CassandraStorageConfig struct {
 
 type CassandraStorage struct {
 	conf    *CassandraStorageConfig
-	cluster *gocql.ClusterConfig
-	session *gocql.Session
-}
-
-type CassandraSession struct {
 	session *gocql.Session
 }
 
 func NewCassandraStorage(conf *CassandraStorageConfig) (*CassandraStorage, error) {
-	cluster := gocql.NewCluster(conf.Hosts...)
-	session, err := cluster.CreateSession()
+	clusterConfig := gocql.NewCluster(conf.Hosts...)
+	session, err := clusterConfig.CreateSession()
 	if err != nil {
 		return nil, err
 	}
-	return &CassandraStorage{conf: conf, cluster: cluster, session: session}, nil
+	return &CassandraStorage{conf: conf, session: session}, nil
 }
 
-func (s *CassandraStorage) Close() {
+func (s *CassandraStorage) Session() *gocql.Session {
+	return s.session
+}
+
+func (s *CassandraStorage) Close() error {
 	s.session.Close()
+	return nil
 }
