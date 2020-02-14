@@ -17,10 +17,17 @@ DATAGATHER_SRCS := $(shell find cmd/datagather -name '*.go')
 DATAGATHER_MAIN := cmd/datagather/main.go
 DATAGATHER_TARGET := datagather
 
-all: proto $(DATAGATHER_TARGET)
+DATAWRITER_SRCS := $(shell find cmd/datawriter -name '*.go')
+DATAWRITER_MAIN := cmd/datawriter/main.go
+DATAWRITER_TARGET := datawriter
+
+all: proto $(DATAGATHER_TARGET) $(DATAWRITER_TARGET)
 
 $(DATAGATHER_TARGET): $(DATAGATHER_SRCS) $(SRCS)
 	$(GO) build $(CFLAGS) $(LDFLAGS) -o $(DATAGATHER_TARGET) $(DATAGATHER_MAIN)
+
+$(DATAWRITER_TARGET): $(DATAWRITER_SRCS) $(SRCS)
+	$(GO) build $(CFLAGS) $(LDFLAGS) -o $(DATAWRITER_TARGET) $(DATAWRITER_MAIN)
 
 proto: $(GO_PROTO_TARGETS)
 

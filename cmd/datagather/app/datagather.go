@@ -4,15 +4,14 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+
 	"github.com/gogo/protobuf/jsonpb"
 	"github.com/gogo/protobuf/proto"
 	"github.com/ijsong/farseer/internal/service"
 	"github.com/ijsong/farseer/pkg/kafka"
-	"strings"
 
 	"github.com/ijsong/farseer/pkg/queue"
 	"github.com/ijsong/farseer/pkg/server"
-	"github.com/ijsong/farseer/pkg/storage"
 	"go.uber.org/zap"
 )
 
@@ -23,15 +22,13 @@ type DataGather struct {
 	producers     []*queue.EmbeddedQueueProducer
 	consumer      *queue.EmbeddedQueueConsumer
 	kafkaProducer *kafka.KafkaProducer
-	storage       storage.Storage
 	logger        *zap.Logger
 }
 
 type DataGatherConfig struct {
-	serverConfig   *server.ServerConfig
-	queueConfig    *queue.EmbeddedQueueConfig
-	kafkaConfig    *kafka.KafkaConfig
-	cassandraHosts string
+	serverConfig *server.ServerConfig
+	queueConfig  *queue.EmbeddedQueueConfig
+	kafkaConfig  *kafka.KafkaConfig
 }
 
 type DataGatherService interface {
@@ -72,8 +69,6 @@ func NewDataGather(conf *DataGatherConfig) (*DataGather, error) {
 		return nil, err
 	}
 
-	dg.storage = storage.NewCassandraStorage(strings.Split(conf.cassandraHosts, ","))
-
 	dg.kafkaProducer, err = kafka.NewKafkaProducer(conf.kafkaConfig)
 	if err != nil {
 		return nil, err
@@ -102,7 +97,6 @@ func (dg *DataGather) Start() error {
 		return dg.kafkaProducer.Produce("datagather", bytes)
 	}, dg.conf.queueConfig.NumberOfConsumers)
 	dg.consumer.Connect(dg.conf.queueConfig.Address)
-	dg.storage.Connect()
 	dg.logger.Info("starting server")
 	defer dg.stop()
 	return dg.svr.Start(context.Background(), services)
