@@ -26,6 +26,18 @@ func NewCassandraEventDataModel(s *CassandraStorage) (*CassandraEventDataModel, 
 	}, nil
 }
 
+func NewCassandraItemDataModel(s *CassandraStorage) (*CassandraItemDataModel, error) {
+	return &CassandraItemDataModel{
+		session: s.Session(),
+	}, nil
+}
+
+func NewCassandraUserDataModel(s *CassandraStorage) (*CassandraUserDataModel, error) {
+	return &CassandraUserDataModel{
+		session: s.Session(),
+	}, nil
+}
+
 func (edm *CassandraEventDataModel) Create(event *datatypes.Event) error {
 	stmt, names := qb.Insert("farseer.events").Columns("user_id", "item_id", "event_type", "event_value", "timestamp", "properties").ToCql()
 	m := qb.M{
@@ -69,5 +81,43 @@ func (idm *CassandraItemDataModel) Delete(itemId string) error {
 		zap.L().Error("could not handle query", zap.Error(err))
 		return err
 	}
+	return nil
+}
+
+func (idm *CassandraItemDataModel) Update(item *datatypes.Item) error {
+	stmt, names := qb.Update("farseer.items").Set("properties", "update_time").Where(qb.Eq("id")).ToCql()
+	m := qb.M{
+		"id":          item.Id,
+		"properties":  item.Properties,
+		"update_time": gocql.UUIDFromTime(item.UpdateTime),
+	}
+	q := gocqlx.Query(idm.session.Query(stmt), names).BindMap(m)
+	if err := q.ExecRelease(); err != nil {
+		zap.L().Error("could not handle query", zap.Error(err))
+		return err
+	}
+	return nil
+}
+
+func (udm *CassandraUserDataModel) Create(user *datatypes.User) error {
+	stmt, names := qb.Insert("farseer.users").Columns("id", "properties", "create_time", "update_time").ToCql()
+	q := gocqlx.Query(udm.session.Query(stmt), names).BindMap(qb.M{
+		"id":          user.Id,
+		"properties":  user.Properties,
+		"create_time": gocql.UUIDFromTime(user.CreateTime),
+		"update_time": gocql.UUIDFromTime(user.UpdateTime),
+	})
+	if err := q.ExecRelease(); err != nil {
+		zap.L().Error("could not handle query", zap.Error(err))
+		return err
+	}
+	return nil
+}
+
+func (udm *CassandraUserDataModel) Delete(userId string) error {
+	return nil
+}
+
+func (udm *CassandraUserDataModel) Update(user *datatypes.User) error {
 	return nil
 }

@@ -31,7 +31,7 @@ func NewDataGatherCommand() *cobra.Command {
 
 	startCmd.Flags().StringVar(&conf.serverConfig.ListenAddress, "listen_address", ":9091", "listen address")
 	startCmd.Flags().StringVar(&conf.queueConfig.Address, "queue_address", "localhost:4150", "embedded queue address")
-	startCmd.Flags().StringVar(&conf.queueConfig.DataPath, "queue_data_path", "", "embedded queue data path")
+	startCmd.Flags().StringVar(&conf.queueConfig.DataPath, "queue_data_path", "data", "embedded queue data path")
 	startCmd.Flags().Int64Var(&conf.queueConfig.MemQueueSize, "queue_mem_size", 10000, "embedded queue data path")
 	startCmd.Flags().Int64Var(&conf.queueConfig.SyncEvery, "queue_sync_every", 2500, "number of messages per queue persistence (fsync)")
 	startCmd.Flags().DurationVar(&conf.queueConfig.SyncTimeout, "queue_sync_timeout", 2*time.Second, "queue persistent interval (fsync)")

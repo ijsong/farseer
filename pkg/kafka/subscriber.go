@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
+	"go.uber.org/zap"
 )
 
 type KafkaSubscriber struct {
@@ -52,7 +53,9 @@ func (s *KafkaSubscriber) Subscribe(topic string, onSuccess func([]byte) error, 
 					continue
 
 				}
-				onSuccess(msg.Value)
+				if err := onSuccess(msg.Value); err != nil {
+					zap.L().Error("could not handle message", zap.Error(err))
+				}
 
 			}
 		}

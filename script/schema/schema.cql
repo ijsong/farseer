@@ -15,13 +15,13 @@ CREATE TABLE IF NOT EXISTS items (
     PRIMARY KEY (id)
 );
 
+-- FIXME: ingestion timestamp and event timestamp
 CREATE TABLE IF NOT EXISTS events (
     user_id text,
     item_id text,
     event_type text,
     event_value int,
     timestamp timeuuid,
-    -- session text,
     properties map<text, text>,
     PRIMARY KEY (user_id, timestamp, event_type, item_id)
 ) WITH CLUSTERING ORDER BY (timestamp DESC);

@@ -55,21 +55,25 @@ func (dw *DataWriter) Start() error {
 		zap.L().Error("could not instantiate data model", zap.Error(err))
 		return err
 	}
+	dw.itemDataModel, err = cassandra.NewCassandraItemDataModel(dw.cassandra)
+	if err != nil {
+		zap.L().Error("could not instantiate data model", zap.Error(err))
+		return err
+	}
+	dw.userDataModel, err = cassandra.NewCassandraUserDataModel(dw.cassandra)
+	if err != nil {
+		zap.L().Error("could not instantiate data model", zap.Error(err))
+		return err
+	}
+
 	dw.kafkaSubscriber.Subscribe(
 		"datagather",
 		func(msg []byte) error {
-			// gogo cassandra
-			zap.L().Info("handle message", zap.String("message", string(msg)))
-			reader := bytes.NewReader(msg)
-			req := &service.DatagatherRequest{}
-			if err := jsonpb.Unmarshal(reader, req); err != nil {
-				zap.L().Error("could not unmarshal kafka message", zap.Error(err))
+			req, err := dw.parseDatagatherRequest(msg)
+			if err != nil {
 				return err
 			}
-			fmt.Printf("req: %v\n", req)
-			event := req.GetCreateEventRequest().GetEvent()
-			fmt.Println(event)
-			return dw.eventDataModel.CreateEvent(event)
+			return dw.handleDatagatherRequest(req)
 		},
 		func(err error) {
 			zap.L().Error("could not handle message", zap.Error(err))
@@ -87,6 +91,8 @@ func (dw *DataWriter) Start() error {
 		}
 	}()
 
+	zap.L().Info("starting...")
+
 	<-dw.q
 	return nil
 }
@@ -98,4 +104,38 @@ func (dw *DataWriter) Stop() error {
 	}
 	dw.q <- "term"
 	return nil
+}
+
+func (dw *DataWriter) parseDatagatherRequest(msg []byte) (*service.DatagatherRequest, error) {
+	// gogo cassandra
+	zap.L().Info("handle message", zap.String("message", string(msg)))
+	reader := bytes.NewReader(msg)
+	req := &service.DatagatherRequest{}
+	if err := jsonpb.Unmarshal(reader, req); err != nil {
+		zap.L().Error("could not unmarshal kafka message", zap.Error(err))
+		return nil, err
+	}
+	return req, nil
+}
+
+func (dw *DataWriter) handleDatagatherRequest(req *service.DatagatherRequest) error {
+	switch msg := req.GetValue().(type) {
+	case *service.CreateEventRequest:
+		return dw.eventDataModel.Create(msg.GetEvent())
+	case *service.CreateItemRequest:
+		return dw.itemDataModel.Create(msg.GetItem())
+	case *service.DeleteItemRequest:
+		return dw.itemDataModel.Delete(msg.GetItemId())
+	case *service.UpdateItemRequest:
+		return dw.itemDataModel.Update(msg.GetItem())
+	case *service.CreateUserRequest:
+		return dw.userDataModel.Create(msg.GetUser())
+	case *service.DeleteUserRequest:
+		return dw.userDataModel.Delete(msg.GetUserId())
+	case *service.UpdateUserRequest:
+		return dw.userDataModel.Update(msg.GetUser())
+	default:
+		zap.L().Error("could not handle message")
+		return fmt.Errorf("unknown request message")
+	}
 }

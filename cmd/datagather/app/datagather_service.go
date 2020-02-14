@@ -34,8 +34,10 @@ func (ds *DatagatherService) RegisterService(grpcServer *grpc.Server) {
 }
 
 func (ds *DatagatherService) CreateEvent(ctx context.Context, req *service.CreateEventRequest) (*types.Empty, error) {
+	// TODO: Check message
 	if req.Event == nil {
-		return nil, fmt.Errorf("nil event")
+		return nil, service.NewNotInitiatedMessageError("CreateEvent")
+		//return nil, fmt.Errorf("nil event")
 	}
 	if req.Event.Timestamp.IsZero() {
 		req.Event.Timestamp = time.Now()
@@ -47,6 +49,9 @@ func (ds *DatagatherService) CreateEvent(ctx context.Context, req *service.Creat
 }
 
 func (ds *DatagatherService) CreateItem(ctx context.Context, req *service.CreateItemRequest) (*types.Empty, error) {
+	if req.Item == nil {
+		return nil, fmt.Errorf("nil event")
+	}
 	if err := ds.publishDatagatherRequest(req); err != nil {
 		return nil, err
 	}
