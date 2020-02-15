@@ -7,6 +7,8 @@ It consists of several parts:
 * ML/DL model prediction serving
 
 # Architecture
+Farseer has two components - feature store and personalization.
+![Architecture](figs/architecture.png)
 
 # Fact/Feature Store
 
