@@ -1,0 +1,32 @@
+
+syntax = "proto3";
+
+package farseer.datatypes;
+
+import "google/protobuf/duration.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+
+option go_package = "github.com/ijsong/farseer/pkg/datatypes";
+
+message FeatureSet {
+    string id = 1;
+    repeated KeyAttribute key_attributes = 3;
+    repeated FeatureAttribute feature_attributes = 4;
+    google.protobuf.Timestamp create_time = 5 [(gogoproto.stdtime) = true, (gogoproto.nullable) = false];
+
+    message KeyAttribute {
+        string name = 1;
+    }
+
+    message FeatureAttribute {
+        string name = 1;
+        google.protobuf.Duration ttl = 2 [(gogoproto.stdduration) = true];
+    }
+}
+
+
+
+
+
