@@ -11,9 +11,10 @@ option go_package = "github.com/ijsong/farseer/pkg/datatypes";
 
 message User {
     string id = 1;
-    map<string, string> properties = 2;
-    google.protobuf.Timestamp create_time = 3 [(gogoproto.stdtime) = true, (gogoproto.nullable) = false];
-    google.protobuf.Timestamp update_time = 4 [(gogoproto.stdtime) = true, (gogoproto.nullable) = false];
+    string user_type = 2;
+    map<string, string> properties = 3;
+    google.protobuf.Timestamp create_time = 4 [(gogoproto.stdtime) = true, (gogoproto.nullable) = false];
+    google.protobuf.Timestamp update_time = 5 [(gogoproto.stdtime) = true, (gogoproto.nullable) = false];
 }
 
 message GetUserRequest {
