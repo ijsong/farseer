@@ -1,6 +1,8 @@
 package cassandra
 
 import (
+	"time"
+
 	"github.com/gocql/gocql"
 	"github.com/ijsong/farseer/pkg/datatypes"
 	"github.com/scylladb/gocqlx"
@@ -38,15 +40,25 @@ func NewCassandraUserDataModel(s *CassandraStorage) (*CassandraUserDataModel, er
 	}, nil
 }
 
+func getTimestampOrNow(t time.Time) time.Time {
+	if t.IsZero() {
+		return time.Now()
+	}
+	return t
+}
+
 func (edm *CassandraEventDataModel) Create(event *datatypes.Event) error {
-	stmt, names := qb.Insert("farseer.events").Columns("user_id", "item_id", "event_type", "event_value", "timestamp", "properties").ToCql()
+	stmt, names := qb.Insert("farseer.events").Columns("user_id", "item_id", "event_type", "event_value", "version_timestamp", "event_timestamp", "properties").ToCql()
+	versionTimestamp := getTimestampOrNow(event.VersionTimestamp)
+	eventTimestamp := getTimestampOrNow(event.EventTimestamp)
 	m := qb.M{
-		"user_id":     event.UserId,
-		"item_id":     event.ItemId,
-		"event_type":  event.EventType,
-		"event_value": event.EventValue,
-		"timestamp":   gocql.UUIDFromTime(event.Timestamp),
-		"properties":  event.Properties,
+		"user_id":           event.UserId,
+		"item_id":           event.ItemId,
+		"event_type":        event.EventType,
+		"event_value":       event.EventValue,
+		"version_timestamp": gocql.UUIDFromTime(versionTimestamp),
+		"event_timestamp":   eventTimestamp,
+		"properties":        event.Properties,
 	}
 	q := gocqlx.Query(edm.session.Query(stmt), names).BindMap(m)
 	if err := q.ExecRelease(); err != nil {
@@ -57,12 +69,15 @@ func (edm *CassandraEventDataModel) Create(event *datatypes.Event) error {
 }
 
 func (idm *CassandraItemDataModel) Create(item *datatypes.Item) error {
-	stmt, names := qb.Insert("farseer.items").Columns("id", "properties", "create_time", "update_time").ToCql()
+	stmt, names := qb.Insert("farseer.items").Columns("id", "item_type", "properties", "created_time", "updated_time").ToCql()
+	createdTime := getTimestampOrNow(item.CreatedTime)
+	updatedTime := getTimestampOrNow(item.UpdatedTime)
 	m := qb.M{
-		"id":          item.Id,
-		"properties":  item.Properties,
-		"create_time": gocql.UUIDFromTime(item.CreateTime),
-		"update_time": gocql.UUIDFromTime(item.UpdateTime),
+		"id":           item.Id,
+		"item_type":    item.ItemType,
+		"properties":   item.Properties,
+		"created_time": createdTime,
+		"updated_time": updatedTime,
 	}
 	q := gocqlx.Query(idm.session.Query(stmt), names).BindMap(m)
 	if err := q.ExecRelease(); err != nil {
@@ -85,11 +100,12 @@ func (idm *CassandraItemDataModel) Delete(itemId string) error {
 }
 
 func (idm *CassandraItemDataModel) Update(item *datatypes.Item) error {
-	stmt, names := qb.Update("farseer.items").Set("properties", "update_time").Where(qb.Eq("id")).ToCql()
+	stmt, names := qb.Update("farseer.items").Set("properties", "updated_time").Where(qb.Eq("id")).ToCql()
+	updatedTime := getTimestampOrNow(item.UpdatedTime)
 	m := qb.M{
-		"id":          item.Id,
-		"properties":  item.Properties,
-		"update_time": gocql.UUIDFromTime(item.UpdateTime),
+		"id":           item.Id,
+		"properties":   item.Properties,
+		"updated_time": updatedTime,
 	}
 	q := gocqlx.Query(idm.session.Query(stmt), names).BindMap(m)
 	if err := q.ExecRelease(); err != nil {
@@ -100,12 +116,15 @@ func (idm *CassandraItemDataModel) Update(item *datatypes.Item) error {
 }
 
 func (udm *CassandraUserDataModel) Create(user *datatypes.User) error {
-	stmt, names := qb.Insert("farseer.users").Columns("id", "properties", "create_time", "update_time").ToCql()
+	stmt, names := qb.Insert("farseer.users").Columns("id", "user_type", "properties", "created_time", "updated_time").ToCql()
+	createdTime := getTimestampOrNow(user.CreatedTime)
+	updatedTime := getTimestampOrNow(user.UpdatedTime)
 	q := gocqlx.Query(udm.session.Query(stmt), names).BindMap(qb.M{
-		"id":          user.Id,
-		"properties":  user.Properties,
-		"create_time": gocql.UUIDFromTime(user.CreateTime),
-		"update_time": gocql.UUIDFromTime(user.UpdateTime),
+		"id":           user.Id,
+		"user_type":    user.UserType,
+		"properties":   user.Properties,
+		"created_time": createdTime,
+		"updated_time": updatedTime,
 	})
 	if err := q.ExecRelease(); err != nil {
 		zap.L().Error("could not handle query", zap.Error(err))
@@ -115,9 +134,29 @@ func (udm *CassandraUserDataModel) Create(user *datatypes.User) error {
 }
 
 func (udm *CassandraUserDataModel) Delete(userId string) error {
+	stmt, names := qb.Delete("farseer.users").Where(qb.Eq("id")).ToCql()
+	q := gocqlx.Query(udm.session.Query(stmt), names).BindMap(qb.M{
+		"id": userId,
+	})
+	if err := q.ExecRelease(); err != nil {
+		zap.L().Error("could not handle query", zap.Error(err))
+		return err
+	}
 	return nil
 }
 
 func (udm *CassandraUserDataModel) Update(user *datatypes.User) error {
+	stmt, names := qb.Update("farseer.items").Set("properties", "updated_time").Where(qb.Eq("id")).ToCql()
+	updatedTime := getTimestampOrNow(user.UpdatedTime)
+	m := qb.M{
+		"id":           user.Id,
+		"properties":   user.Properties,
+		"updated_time": updatedTime,
+	}
+	q := gocqlx.Query(udm.session.Query(stmt), names).BindMap(m)
+	if err := q.ExecRelease(); err != nil {
+		zap.L().Error("could not handle query", zap.Error(err))
+		return err
+	}
 	return nil
 }

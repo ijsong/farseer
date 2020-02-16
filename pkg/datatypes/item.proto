@@ -12,8 +12,8 @@ message Item {
     string id = 1;
     string item_type = 2;
     map<string, string> properties = 3;
-    google.protobuf.Timestamp create_time = 4 [(gogoproto.stdtime) = true, (gogoproto.nullable) = false];
-    google.protobuf.Timestamp update_time = 5 [(gogoproto.stdtime) = true, (gogoproto.nullable) = false];
+    google.protobuf.Timestamp created_time = 4 [(gogoproto.stdtime) = true, (gogoproto.nullable) = false];
+    google.protobuf.Timestamp updated_time = 5 [(gogoproto.stdtime) = true, (gogoproto.nullable) = false];
 }
 
 message GetItemRequest {

@@ -3,25 +3,31 @@ CREATE KEYSPACE IF NOT EXISTS farseer
 
 USE farseer;
 
-CREATE TABLE IF NOT EXISTS users (
-    id text,
-    properties map<text, text>,
-    PRIMARY KEY (id)
-);
-
-CREATE TABLE IF NOT EXISTS items (
-    id text,
-    properties map<text, text>,
-    PRIMARY KEY (id)
-);
-
--- FIXME: ingestion timestamp and event timestamp
 CREATE TABLE IF NOT EXISTS events (
     user_id text,
     item_id text,
     event_type text,
     event_value int,
-    timestamp timeuuid,
+    version_timestamp timeuuid,
+    event_timestamp timestamp,
     properties map<text, text>,
-    PRIMARY KEY (user_id, timestamp, event_type, item_id)
-) WITH CLUSTERING ORDER BY (timestamp DESC);
+    PRIMARY KEY (user_id, version_timestamp, event_type, item_id)
+) WITH CLUSTERING ORDER BY (version_timestamp DESC);
+
+CREATE TABLE IF NOT EXISTS items (
+    id text,
+    item_type text,
+    properties map<text, text>,
+    created_time timestamp,
+    updated_time timestamp,
+    PRIMARY KEY (id)
+);
+
+CREATE TABLE IF NOT EXISTS users (
+    id text,
+    user_type text,
+    properties map<text, text>,
+    created_time timestamp,
+    updated_time timestamp,
+    PRIMARY KEY (id)
+);

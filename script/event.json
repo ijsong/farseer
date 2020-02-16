@@ -1,0 +1,11 @@
+{
+    "event": {
+        "user_id": "u1",
+        "item_id": "i1",
+        "event_type": "play",
+        "properties": {
+            "price": "5000"
+        }
+    },
+    "async": true
+}
