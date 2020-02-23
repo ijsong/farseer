@@ -11,10 +11,42 @@ import "github.com/ijsong/farseer/pkg/datatypes/user.proto";
 
 option go_package = "github.com/ijsong/farseer/internal/service";
 
+/*
+message CreateRequest {
+    option (gogoproto.onlyone) = true;
+    farseer.datatypes.Event event = 1;
+    farseer.datatypes.Item item = 2;
+    farseer.datatypes.User user = 3;
+}
+
+message DeleteRequest {
+    option (gogoproto.onlyone) = true;
+    string item_id = 1;
+    string user_id = 2;
+}
+
+message UpdateRequest {
+    option (gogoproto.onlyone) = true;
+    farseer.datatypes.Item item = 1;
+    farseer.datatypes.User user = 2;
+}
+
+message DatagatherRequest {
+    Payload payload = 1;
+    bool async = 2;
+
+    message Payload {
+        option (gogoproto.onlyone) = true;
+        CreateRequest create_request = 1;
+        DeleteRequest delete_request = 2;
+        UpdateRequest update_request = 3;
+    }
+}
+*/
+
 message CreateEventRequest {
-    string user_id = 1;
-    farseer.datatypes.Event event = 2;
-    bool async = 3;
+    farseer.datatypes.Event event = 1;
+    bool async = 2;
 }
 
 message CreateItemRequest {
@@ -28,9 +60,8 @@ message DeleteItemRequest {
 }
 
 message UpdateItemRequest {
-    string item_id = 1;
-    farseer.datatypes.Item item = 2;
-    bool async = 3;
+    farseer.datatypes.Item item = 1;
+    bool async = 2;
 }
 
 message CreateUserRequest {
@@ -44,14 +75,12 @@ message DeleteUserRequest {
 }
 
 message UpdateUserRequest {
-    string user_id = 1;
-    farseer.datatypes.User user = 2;
-    bool async = 3;
+    farseer.datatypes.User user = 1;
+    bool async = 2;
 }
 
 message DatagatherRequest {
     option (gogoproto.onlyone) = true;
-
     CreateEventRequest create_event_request = 1;
     CreateItemRequest create_item_request = 2;
     DeleteItemRequest delete_item_request = 3;
