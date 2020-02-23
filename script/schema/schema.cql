@@ -5,13 +5,13 @@ USE farseer;
 
 CREATE TABLE IF NOT EXISTS events (
     user_id text,
+    version_timestamp timeuuid,
     item_id text,
     event_type text,
-    event_value int,
-    version_timestamp timeuuid,
     event_timestamp timestamp,
+    event_value int,
     properties map<text, text>,
-    PRIMARY KEY (user_id, version_timestamp, event_type, item_id)
+    PRIMARY KEY (user_id, version_timestamp, item_id, event_type, event_timestamp)
 ) WITH CLUSTERING ORDER BY (version_timestamp DESC);
 
 CREATE TABLE IF NOT EXISTS items (
