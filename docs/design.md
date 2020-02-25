@@ -12,6 +12,9 @@ Farseer has two components - feature store and personalization.
 
 # Fact/Feature Store
 
+## Data Model
+![Data Model](figs/data-model.png)
+
 # Fact/Feature Serving
 
 ## Offline Fact/Feature Serving
